@@ -42,15 +42,6 @@ class ParticleSwarmOptimization:
             self.update_x()
 
             print(self)
-            print("\n")
 
     def __str__(self):
-        return f"""
-        x: {self.x},
-        v: {self.v},
-        c: {self.c},
-        r: {self.r},
-        w: {self.w},
-        pBest: {self.pbest},
-        gBest: {self.gbest}
-        f{[x for x in self.x['old']]}: {[self.f(x) for x in self.x['old']]}"""
+        return f"\n{{\n    x: {{\n        old: {[f'{x:.3f}' for x in self.x['old']]},\n        new: {[f'{x:.3f}' for x in self.x['new']]}\n    }},\n\n    f{[f'{x:.3f}' for x in self.x['old']]}: {[f'{self.f(x):.3f}' for x in self.x['old']]},\n    pBest: {[f'{pbest:.3f}' for pbest in self.pbest]},\n    gBest: {self.gbest},\n    v: {[f'{v:.3f}' for v in self.v]}\n}}"
