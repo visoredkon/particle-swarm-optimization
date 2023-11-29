@@ -1,47 +1,132 @@
+import inspect
+from tabulate import tabulate
+
+
 class ParticleSwarmOptimization:
-    def __init__(self, x, v, c, r, w, f):
-        self.x = {"old": x, "new": x.copy()}
-        self.v = v.copy() * len(x)
-        self.c = c.copy()
-        self.r = r.copy()
-        self.w = w
+    def __init__(self, particle, v, c, r, w, f):
+        self.particle = {"old": particle, "new": particle.copy()}
+        self.velocities = [v.copy() for _ in range(len(particle))]
+        self.cognitive_coefficient = c.copy()
+        self.social_coefficient = r.copy()
+        self.inertia_weight = w
         self.f = f
 
-        self.pbest = x.copy()
+        self.pbest = particle.copy()
         self.gbest = None
 
+        self.iter = 0
+
     def update_pbest(self):
-        for index, (old_x, new_x) in enumerate(zip(self.x["old"], self.x["new"])):
-            if self.f(new_x) < self.f(old_x):
-                self.pbest[index] = new_x
+        self.pbest = [
+            new_particle
+            if self.f(*new_particle) < self.f(*old_particle)
+            else old_particle
+            for new_particle, old_particle in zip(
+                self.particle["new"], self.particle["old"]
+            )
+        ]
 
     def update_gbest(self):
-        self.gbest = min(self.pbest)
+        self.gbest = min(
+            [self.f(*particle), particle] for particle in self.particle["new"]
+        )[1]
 
-    def update_v(self):
-        for index, (v_i, pbest_i, x_i) in enumerate(
-            zip(self.v, self.pbest, self.x["new"])
-        ):
-            self.v[index] = (
-                self.w * v_i
-                + self.r[0] * self.c[0] * (pbest_i - x_i)
-                + self.r[1] * self.c[1] * (self.gbest - x_i)
-            )
+    def update_velocity(self):
+        self.velocities = [
+            [
+                self.inertia_weight * current_velocity[j]
+                + self.social_coefficient[0]
+                * self.cognitive_coefficient[0]
+                * (self.pbest[i][j] - current_particle)
+                + self.social_coefficient[1]
+                * self.cognitive_coefficient[1]
+                * (self.gbest[j] - current_particle)
+                for j, current_particle in enumerate(self.particle["new"][i])
+            ]
+            for i, current_velocity in enumerate(self.velocities)
+        ]
 
-    def update_x(self):
-        self.x["old"] = self.x["new"].copy()
+    def update_particle(self):
+        self.particle["old"] = self.particle["new"].copy()
+        self.particle["new"] = [
+            [
+                particle_value + self.velocities[i][j]
+                for j, particle_value in enumerate(current_particle)
+            ]
+            for i, current_particle in enumerate(self.particle["new"])
+        ]
 
-        for index, _ in enumerate(self.x["new"]):
-            self.x["new"][index] += self.v[index]
-
-    def run(self, iter):
+    def run(self, iter=1):
         for _ in range(iter):
             self.update_pbest()
             self.update_gbest()
-            self.update_v()
-            self.update_x()
+            self.update_velocity()
+            self.update_particle()
 
-            print(self)
+            self.iter += 1
+
+            print("\n", self)
 
     def __str__(self):
-        return f"\n{{\n    x: {{\n        old: {[f'{x:.3f}' for x in self.x['old']]},\n        new: {[f'{x:.3f}' for x in self.x['new']]}\n    }},\n\n    f{[f'{x:.3f}' for x in self.x['old']]}: {[f'{self.f(x):.3f}' for x in self.x['old']]},\n    pBest: {[f'{pbest:.3f}' for pbest in self.pbest]},\n    gBest: {self.gbest},\n    v: {[f'{v:.3f}' for v in self.v]}\n}}"
+        source_code = inspect.getsource(self.f).split("\n")
+
+        source_code = f'{source_code[0].strip().replace("def ", "")} {source_code[1].strip().replace("return ", "")}'
+        print(source_code)
+        table_header = [
+            "Iteration",
+            "Position",
+            "Function",
+            "Fitness (pBest)",
+            "Optimization Result (gBest)",
+            "Velocity",
+            "New Position",
+        ]
+        table_data = [
+            [
+                self.iter,
+                ",\n".join(
+                    [
+                        str([f"{position:.3f}" for position in particle_position])
+                        for particle_position in self.particle["old"]
+                    ]
+                ),
+                ",\n".join(
+                    [
+                        f"{f_value:.3f}"
+                        for f_value in [
+                            self.f(*position) for position in self.particle["old"]
+                        ]
+                    ]
+                ),
+                ",\n".join(
+                    [
+                        str([f"{position:.3f}" for position in particle_position])
+                        for particle_position in self.pbest
+                    ]
+                ),
+                ""
+                if self.iter == 0
+                else ",\n".join(str(position) for position in self.gbest),
+                ",\n".join(
+                    [
+                        str([f"{velocity:.3f}" for velocity in particle_velocity])
+                        for particle_velocity in self.velocities
+                    ]
+                ),
+                ""
+                if self.iter == 0
+                else ",\n".join(
+                    [
+                        str([f"{position:.3f}" for position in particle_position])
+                        for particle_position in self.particle["new"]
+                    ]
+                ),
+            ]
+        ]
+        return tabulate(
+            table_data,
+            headers=table_header,
+            stralign="center",
+            numalign="center",
+            tablefmt="rounded_grid",
+        )
