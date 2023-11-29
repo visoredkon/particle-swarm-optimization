@@ -68,10 +68,10 @@ class ParticleSwarmOptimization:
             print("\n", self)
 
     def __str__(self):
-        source_code = inspect.getsource(self.f).split("\n")
+        objective_function = inspect.getsource(self.f).split("\n")
+        objective_function = f'{objective_function[0].strip().replace("def ", "")} {objective_function[1].strip().replace("return ", "")}'
 
-        source_code = f'{source_code[0].strip().replace("def ", "")} {source_code[1].strip().replace("return ", "")}'
-        print(source_code)
+        print(objective_function)
         table_header = [
             "Iteration",
             "Position",
