@@ -12,8 +12,8 @@ if __name__ == "__main__":
     r = [0.5, 0.5]
     w = 1.0
 
-    case_1 = ParticleSwarmOptimization(
+    pso = ParticleSwarmOptimization(
         [list(particle) for particle in zip(x)], v, c, r, w, f
     )
 
-    case_1.run(3)
+    pso.run(3)

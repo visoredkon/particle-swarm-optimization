@@ -13,8 +13,8 @@ if __name__ == "__main__":
     r = [1.0, 1.0]
     w = 1.0
 
-    particle = ParticleSwarmOptimization(
+    pso = ParticleSwarmOptimization(
         [list(particle) for particle in zip(x, y)], v, c, r, w, f
     )
 
-    particle.run(3)
+    pso.run(3)
