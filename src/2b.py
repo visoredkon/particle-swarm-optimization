@@ -16,8 +16,8 @@ if __name__ == "__main__":
     r = [uniform(0, 1) for _ in range(2)]
     w = 1.0
 
-    particle = ParticleSwarmOptimization(
+    pso = ParticleSwarmOptimization(
         [list(particle) for particle in zip(x, y)], v, c, r, w, f
     )
 
-    particle.run(3)
+    pso.run(3)
