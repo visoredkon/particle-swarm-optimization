@@ -7,7 +7,9 @@ if __name__ == "__main__":
     def f(x):
         return 0 <= x <= 3 and -2 * e ** (-(x**2))
 
-    x = [uniform(0, 3) for _ in range(3)]
+    dimension = 3
+
+    x = [uniform(0, 3) for _ in range(dimension)]
     v = [0.0]
     c = [1.0, 0.5]
     r = [uniform(0, 1) for _ in range(2)]
@@ -18,3 +20,5 @@ if __name__ == "__main__":
     )
 
     case_1.run(3)
+
+    case_1.plot_data()
