@@ -20,5 +20,3 @@ if __name__ == "__main__":
     )
 
     case_1.run(3)
-
-    case_1.plot_data()
